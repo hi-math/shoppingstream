@@ -1,0 +1,312 @@
+// ProductDetailScreen.jsx
+// · 부모(StreamScreen)가 translateX 포지셔닝을 전담 → 자체 애니메이션 없음
+// · 다크 테마
+
+import React, { useState } from 'react';
+import { localThumb } from '../data/localImages.js';
+
+export default function ProductDetailScreen({ item, onClose }) {
+  const [saved,    setSaved]    = useState(false);
+  const [inCart,   setInCart]   = useState(false);
+  const [imgError, setImgError] = useState(false);
+
+  const hasDiscount = item.discount > 0 && item.originalPrice > item.price;
+
+  return (
+    <div
+      style={{
+        position: 'absolute',
+        inset: 0,
+        display: 'flex',
+        flexDirection: 'column',
+        backgroundColor: '#0F0F0F',
+        overflow: 'hidden',
+      }}
+    >
+      {/* ── Hero 이미지 ── */}
+      <div
+        style={{
+          position: 'relative',
+          height: 380,
+          flexShrink: 0,
+          backgroundColor: imgError ? '#1A1A1A' : '#0A0A0A',
+          overflow: 'hidden',
+        }}
+      >
+        {!imgError && (
+          <img
+            src={localThumb(item.id)}
+            alt={item.name}
+            onError={() => setImgError(true)}
+            style={{
+              width: '100%', height: '100%',
+              objectFit: 'cover',
+              objectPosition: 'center top',
+            }}
+          />
+        )}
+
+        {/* 상단 그라디언트 */}
+        <div
+          style={{
+            position: 'absolute',
+            top: 0, left: 0, right: 0,
+            height: 120,
+            background: 'linear-gradient(to bottom,rgba(0,0,0,0.6),transparent)',
+            pointerEvents: 'none',
+          }}
+        />
+
+        {/* 하단 그라디언트 */}
+        <div
+          style={{
+            position: 'absolute',
+            bottom: 0, left: 0, right: 0,
+            height: 80,
+            background: 'linear-gradient(to top,rgba(15,15,15,1),transparent)',
+            pointerEvents: 'none',
+          }}
+        />
+
+        {/* ← 뒤로가기 */}
+        <button
+          onClick={onClose}
+          style={{
+            position: 'absolute',
+            top: 14, left: 14,
+            width: 36, height: 36,
+            borderRadius: 18,
+            border: '1px solid rgba(255,255,255,0.15)',
+            backgroundColor: 'rgba(0,0,0,0.55)',
+            color: '#E8E8E8',
+            fontSize: 22,
+            cursor: 'pointer',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            backdropFilter: 'blur(8px)',
+          }}
+        >
+          ‹
+        </button>
+
+        {/* 카테고리 배지 */}
+        <span
+          style={{
+            position: 'absolute',
+            top: 14, right: 14,
+            padding: '4px 10px',
+            borderRadius: 20,
+            backgroundColor: 'rgba(0,0,0,0.55)',
+            border: '1px solid rgba(255,255,255,0.12)',
+            backdropFilter: 'blur(8px)',
+            color: '#AAAAAA',
+            fontSize: 11, fontWeight: 600,
+            letterSpacing: 0.4,
+          }}
+        >
+          {item.category} · {item.categoryMedium}
+        </span>
+
+        {/* 할인 배지 */}
+        {hasDiscount && (
+          <span
+            style={{
+              position: 'absolute',
+              bottom: 14, left: 14,
+              padding: '4px 10px',
+              borderRadius: 6,
+              backgroundColor: '#F5F5F5',
+              color: '#0A0A0A',
+              fontSize: 12, fontWeight: 800,
+              letterSpacing: 0.3,
+            }}
+          >
+            -{item.discount}% SALE
+          </span>
+        )}
+      </div>
+
+      {/* ── 스크롤 콘텐츠 ── */}
+      <div style={{ flex: 1, overflowY: 'auto', WebkitOverflowScrolling: 'touch' }}>
+        <div style={{ padding: '20px 20px 8px' }}>
+
+          {/* 브랜드 */}
+          <p style={{
+            margin: '0 0 6px',
+            fontSize: 11, fontWeight: 700,
+            color: '#666', letterSpacing: 1.8,
+            textTransform: 'uppercase',
+          }}>
+            {item.brand}
+          </p>
+
+          {/* 상품명 */}
+          <h1 style={{
+            margin: '0 0 18px',
+            fontSize: 19, fontWeight: 700,
+            color: '#E8E8E8', lineHeight: 1.4,
+          }}>
+            {item.name}
+          </h1>
+
+          {/* 가격 */}
+          <div style={{ marginBottom: 20 }}>
+            {hasDiscount && (
+              <p style={{
+                margin: '0 0 4px',
+                fontSize: 13, color: '#444',
+                textDecoration: 'line-through',
+              }}>
+                {item.originalPrice.toLocaleString()}원
+              </p>
+            )}
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: 10 }}>
+              <span style={{
+                fontSize: 28, fontWeight: 800,
+                color: '#F5F5F5', letterSpacing: -0.5,
+              }}>
+                {item.price.toLocaleString()}
+                <span style={{ fontSize: 15, fontWeight: 600, marginLeft: 3, color: '#AAA' }}>원</span>
+              </span>
+              {hasDiscount && (
+                <span style={{
+                  padding: '3px 8px',
+                  borderRadius: 6,
+                  backgroundColor: '#222',
+                  color: '#CCC',
+                  fontSize: 12, fontWeight: 700,
+                }}>
+                  {item.discount}% 할인
+                </span>
+              )}
+            </div>
+          </div>
+
+          {/* 태그 */}
+          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 22 }}>
+            {item.tags.map(tag => (
+              <span
+                key={tag}
+                style={{
+                  padding: '5px 12px',
+                  borderRadius: 6,
+                  border: '1px solid #2A2A2A',
+                  backgroundColor: '#1A1A1A',
+                  color: '#888',
+                  fontSize: 12, fontWeight: 500,
+                }}
+              >
+                {tag}
+              </span>
+            ))}
+          </div>
+
+          {/* 설명 */}
+          <div style={{
+            padding: '16px 18px',
+            borderRadius: 10,
+            backgroundColor: '#1A1A1A',
+            border: '1px solid #222',
+            marginBottom: 10,
+          }}>
+            <p style={{ margin: 0, fontSize: 13, color: '#777', lineHeight: 1.75 }}>
+              <strong style={{ color: '#CCC' }}>{item.brand}</strong>의{' '}
+              {item.categoryMedium} 아이템입니다.{' '}
+              {item.tags.slice(0, 2).join(', ')} 스타일에 어울리며,
+              일상의 다양한 순간에 코디하기 좋습니다.
+            </p>
+          </div>
+
+          {/* 배송 */}
+          <div style={{
+            display: 'flex', alignItems: 'flex-start',
+            gap: 10, padding: '14px 18px',
+            borderRadius: 10,
+            backgroundColor: '#1A1A1A',
+            border: '1px solid #222',
+            marginBottom: 8,
+          }}>
+            <span style={{ fontSize: 16, flexShrink: 0, opacity: 0.5, filter: 'grayscale(20%)' }}>🚚</span>
+            <p style={{ margin: 0, fontSize: 13, color: '#666', lineHeight: 1.6 }}>
+              오늘 주문 시 <strong style={{ color: '#CCC' }}>내일 도착</strong> 가능
+              <br />
+              <span style={{ fontSize: 11, color: '#444' }}>
+                무료배송 · 30일 이내 반품 가능
+              </span>
+            </p>
+          </div>
+
+          {/* 29cm 링크 */}
+          {item.productUrl && (
+            <a
+              href={item.productUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                display: 'flex',
+                alignItems: 'center', justifyContent: 'center',
+                gap: 6,
+                padding: '13px 0',
+                borderRadius: 10,
+                border: '1px solid #2A2A2A',
+                backgroundColor: '#1A1A1A',
+                color: '#888',
+                fontSize: 13, fontWeight: 600,
+                textDecoration: 'none',
+                marginTop: 8,
+              }}
+            >
+              <span style={{ fontSize: 15 }}>↗</span> 29cm에서 직접 보기
+            </a>
+          )}
+
+        </div>
+      </div>
+
+      {/* ── 하단 CTA ── */}
+      <div
+        style={{
+          flexShrink: 0,
+          display: 'flex',
+          gap: 10,
+          padding: '12px 20px 18px',
+          backgroundColor: '#0F0F0F',
+          borderTop: '1px solid #1E1E1E',
+        }}
+      >
+        {/* 저장 버튼 */}
+        <button
+          onClick={() => setSaved(s => !s)}
+          style={{
+            width: 52, height: 52,
+            borderRadius: 10,
+            border: `1px solid ${saved ? '#F5F5F5' : '#2A2A2A'}`,
+            backgroundColor: saved ? '#F5F5F5' : '#1A1A1A',
+            color: saved ? '#0A0A0A' : '#888',
+            fontSize: 20, cursor: 'pointer',
+            flexShrink: 0,
+            transition: 'all 0.2s ease',
+          }}
+        >
+          {saved ? '♥' : '♡'}
+        </button>
+
+        {/* 장바구니 버튼 */}
+        <button
+          onClick={() => setInCart(c => !c)}
+          style={{
+            flex: 1, height: 52,
+            borderRadius: 10,
+            border: 'none',
+            backgroundColor: inCart ? '#2A2A2A' : '#F5F5F5',
+            color: inCart ? '#888' : '#0A0A0A',
+            fontSize: 15, fontWeight: 700,
+            cursor: 'pointer',
+            transition: 'all 0.2s ease',
+          }}
+        >
+          {inCart ? '✓ 담았어요' : '🛒 장바구니 담기'}
+        </button>
+      </div>
+    </div>
+  );
+}
