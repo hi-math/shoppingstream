@@ -41,6 +41,7 @@ export default function StreamCard({
   const [dx,       setDx]       = useState(0);
   const [mode,     setMode]     = useState(null); // 'v' | 'r' | 'x'
   const [dragging, setDragging] = useState(false);
+  const [imgSrc,   setImgSrc]   = useState(localThumb(item.id));
   const [imgError, setImgError] = useState(false);
 
   const startRef    = useRef(null);
@@ -144,13 +145,19 @@ export default function StreamCard({
         touchAction: 'none',
       }}
     >
-      {/* 상품 이미지 */}
+      {/* 상품 이미지 — 로컬 실패 시 CDN 폴백 */}
       {!imgError && (
         <img
-          src={localThumb(item.id)}
+          src={imgSrc}
           alt={item.name}
           draggable={false}
-          onError={() => setImgError(true)}
+          onError={() => {
+            if (imgSrc !== item.thumbnail && item.thumbnail) {
+              setImgSrc(item.thumbnail); // CDN 폴백
+            } else {
+              setImgError(true);         // 둘 다 실패 → 그라디언트
+            }
+          }}
           style={{
             position: 'absolute',
             inset: 0,

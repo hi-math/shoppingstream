@@ -5,6 +5,9 @@ import { localThumb } from '../data/localImages.js';
 import { giftDataset } from '../data/gift_dataset.js';
 
 /* ── 데이터 ── */
+// CDN URL 헬퍼 — 로컬 이미지 없을 때 폴백
+const cdnUrl = (id) => giftDataset.find(p => p.id === id)?.thumbnail ?? '';
+
 const MOST_LOVED_IDS = ['3334217','3984529','3202649','3018840','3061006','1694981'];
 const MOST_LOVED = MOST_LOVED_IDS.map((id, i) => {
   const item = giftDataset.find(p => p.id === id) || giftDataset[i];
@@ -58,10 +61,15 @@ function ArrowIcon() {
 }
 
 /* ── 공통 컴포넌트 ── */
-function Thumb({ id, style }) {
+function Thumb({ id, fallback, style }) {
+  const [src, setSrc] = useState(() => localThumb(id));
   const [err, setErr] = useState(false);
   return !err ? (
-    <img src={localThumb(id)} alt="" draggable={false} onError={() => setErr(true)}
+    <img src={src} alt="" draggable={false}
+      onError={() => {
+        if (fallback && src !== fallback) setSrc(fallback);
+        else setErr(true);
+      }}
       style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center top', display: 'block', ...style }} />
   ) : (
     <div style={{ width: '100%', height: '100%', backgroundColor: '#1A1A1A' }} />
@@ -129,7 +137,7 @@ export default function HomeScreen() {
         <div style={{ position: 'absolute', right: 20, top: 20, width: 160, height: 160, borderRadius: '50%', border: '1px solid #1A1A1A' }} />
         <div style={{ position: 'absolute', right: 0, top: 0, bottom: 0, width: 160, overflow: 'hidden' }}>
           <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 60, background: 'linear-gradient(to right, #111, transparent)', zIndex: 1 }} />
-          <Thumb id="3984529" style={{ objectPosition: 'center 20%' }} />
+          <Thumb id="3984529" fallback={cdnUrl('3984529')} style={{ objectPosition: 'center 20%' }} />
         </div>
         <div style={{ position: 'relative', zIndex: 2, padding: '28px 24px' }}>
           <p style={{ margin: '0 0 6px', fontSize: 10, color: '#555', letterSpacing: 3 }}>LIMITED TIME OFFER</p>
@@ -166,7 +174,7 @@ export default function HomeScreen() {
           }}>
             <div style={{ position: 'absolute', right: 0, top: 0, bottom: 0, width: 90, overflow: 'hidden' }}>
               <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 50, background: 'linear-gradient(to right, #0D0D0D, transparent)', zIndex: 1 }} />
-              <Thumb id={id} style={{ objectPosition: 'center 10%' }} />
+              <Thumb id={id} fallback={cdnUrl(id)} style={{ objectPosition: 'center 10%' }} />
             </div>
             <div style={{ position: 'relative', zIndex: 2, padding: '18px 14px' }}>
               <p style={{ margin: '0 0 3px', fontSize: 10, color: '#444', letterSpacing: 1.5 }}>{label}</p>
@@ -186,7 +194,7 @@ export default function HomeScreen() {
         {MOST_LOVED.map(item => (
           <div key={item.id} style={{ backgroundColor: '#0F0F0F', padding: '0 0 16px', cursor: 'pointer', position: 'relative' }}>
             <div style={{ position: 'relative', width: '100%', aspectRatio: '3/4', backgroundColor: '#1A1A1A', overflow: 'hidden' }}>
-              <Thumb id={item.id} />
+              <Thumb id={item.id} fallback={item.thumbnail} />
               <span style={{
                 position: 'absolute', bottom: 8, left: 10,
                 fontSize: 28, fontWeight: 900, color: 'rgba(255,255,255,0.22)',
@@ -224,7 +232,7 @@ export default function HomeScreen() {
         {HOT_DEALS.map(item => (
           <div key={item.id} style={{ flexShrink: 0, width: 130, backgroundColor: '#0F0F0F', cursor: 'pointer', position: 'relative' }}>
             <div style={{ width: 130, height: 173, overflow: 'hidden', position: 'relative' }}>
-              <Thumb id={item.id} />
+              <Thumb id={item.id} fallback={item.thumbnail} />
               <div style={{
                 position: 'absolute', top: 8, left: 8, padding: '3px 7px',
                 backgroundColor: '#E8E8E8', borderRadius: 2,
@@ -266,7 +274,7 @@ export default function HomeScreen() {
         {NEW_IN.map(item => (
           <div key={item.id} style={{ backgroundColor: '#0F0F0F', padding: '0 0 14px', cursor: 'pointer', position: 'relative' }}>
             <div style={{ width: '100%', aspectRatio: '1/1', overflow: 'hidden', position: 'relative' }}>
-              <Thumb id={item.id} />
+              <Thumb id={item.id} fallback={item.thumbnail} />
               <div style={{
                 position: 'absolute', top: 8, left: 8, padding: '2px 6px',
                 border: '1px solid rgba(255,255,255,0.25)', borderRadius: 2,

@@ -8,6 +8,7 @@ import { localThumb } from '../data/localImages.js';
 export default function ProductDetailScreen({ item, onClose }) {
   const [saved,    setSaved]    = useState(false);
   const [inCart,   setInCart]   = useState(false);
+  const [imgSrc,   setImgSrc]   = useState(localThumb(item.id));
   const [imgError, setImgError] = useState(false);
 
   const hasDiscount = item.discount > 0 && item.originalPrice > item.price;
@@ -35,9 +36,15 @@ export default function ProductDetailScreen({ item, onClose }) {
       >
         {!imgError && (
           <img
-            src={localThumb(item.id)}
+            src={imgSrc}
             alt={item.name}
-            onError={() => setImgError(true)}
+            onError={() => {
+              if (imgSrc !== item.thumbnail && item.thumbnail) {
+                setImgSrc(item.thumbnail);
+              } else {
+                setImgError(true);
+              }
+            }}
             style={{
               width: '100%', height: '100%',
               objectFit: 'cover',

@@ -4,6 +4,8 @@ import React, { useState } from 'react';
 import { localThumb } from '../data/localImages.js';
 import { giftDataset } from '../data/gift_dataset.js';
 
+const cdnUrl = (id) => giftDataset.find(p => p.id === id)?.thumbnail ?? '';
+
 const CATS = [
   { id: 'all',           label: '전체',    thumbId: null },
   { id: '여성의류',       label: '여성의류', thumbId: '3334217' },
@@ -35,11 +37,16 @@ function HeartOutlineIcon({ filled }) {
   );
 }
 
-function Thumb({ id, style }) {
+function Thumb({ id, fallback, style }) {
+  const [src, setSrc] = useState(() => id ? localThumb(id) : null);
   const [err, setErr] = useState(false);
-  if (!id) return <div style={{ width: '100%', height: '100%', backgroundColor: '#1A1A1A' }} />;
+  if (!id || (!src && !fallback)) return <div style={{ width: '100%', height: '100%', backgroundColor: '#1A1A1A' }} />;
   return !err ? (
-    <img src={localThumb(id)} alt="" draggable={false} onError={() => setErr(true)}
+    <img src={src ?? fallback} alt="" draggable={false}
+      onError={() => {
+        if (fallback && src !== fallback) setSrc(fallback);
+        else setErr(true);
+      }}
       style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center top', display: 'block', ...style }} />
   ) : (
     <div style={{ width: '100%', height: '100%', backgroundColor: '#1A1A1A' }} />
@@ -106,7 +113,7 @@ export default function CategoryScreen() {
                 backgroundColor: '#1A1A1A',
                 transition: 'border-color 0.15s ease',
               }}>
-                <Thumb id={cat.thumbId} />
+                <Thumb id={cat.thumbId} fallback={cat.thumbId ? cdnUrl(cat.thumbId) : null} />
               </div>
               <span style={{
                 fontSize: 10, fontWeight: isActive ? 700 : 400,
@@ -157,7 +164,7 @@ export default function CategoryScreen() {
               cursor: 'pointer', position: 'relative',
             }}>
               <div style={{ width: '100%', aspectRatio: '3/4', overflow: 'hidden', position: 'relative' }}>
-                <Thumb id={item.id} />
+                <Thumb id={item.id} fallback={item.thumbnail} />
                 {item.discount > 0 && (
                   <div style={{
                     position: 'absolute', top: 8, left: 8, padding: '2px 6px',
