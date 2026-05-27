@@ -3,6 +3,9 @@
   "version": "0.2.0",
   "description": "Sincerity-Temperature Gift Stream App",
   "type": "module",
+  "engines": {
+    "node": ">=18"
+  },
   "scripts": {
     "dev":   "vite",
     "build": "vite build",
