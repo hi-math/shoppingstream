@@ -98,11 +98,12 @@ function SectionHeader({ title, sub, onMore }) {
   );
 }
 
-export default function HomeScreen() {
+export default function HomeScreen({ onProductClick }) {
   const [liked, setLiked] = useState(new Set());
   const toggleLike = id => setLiked(prev => {
     const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n;
   });
+  const handleProductClick = (item) => onProductClick?.(item);
 
   return (
     <div style={{ height: '100%', overflowY: 'auto', backgroundColor: '#0A0A0A' }}>
@@ -192,7 +193,7 @@ export default function HomeScreen() {
         border: '1px solid #1A1A1A', margin: '0 0 0',
       }}>
         {MOST_LOVED.map(item => (
-          <div key={item.id} style={{ backgroundColor: '#0F0F0F', padding: '0 0 16px', cursor: 'pointer', position: 'relative' }}>
+          <div key={item.id} onClick={() => handleProductClick(item)} style={{ backgroundColor: '#0F0F0F', padding: '0 0 16px', cursor: 'pointer', position: 'relative' }}>
             <div style={{ position: 'relative', width: '100%', aspectRatio: '3/4', backgroundColor: '#1A1A1A', overflow: 'hidden' }}>
               <Thumb id={item.id} fallback={item.thumbnail} />
               <span style={{
@@ -201,7 +202,7 @@ export default function HomeScreen() {
                 lineHeight: 1, fontFamily: 'Georgia, serif', letterSpacing: -1, pointerEvents: 'none',
               }}>{item.rank}</span>
             </div>
-            <button onClick={() => toggleLike(item.id)} style={{
+            <button onClick={(e) => { e.stopPropagation(); toggleLike(item.id); }} style={{
               position: 'absolute', top: 8, right: 8,
               background: 'none', border: 'none', cursor: 'pointer', padding: 4,
             }}>
@@ -230,7 +231,7 @@ export default function HomeScreen() {
       <SectionHeader title="HOT DEAL" sub="SALE ITEMS" onMore={() => {}} />
       <div style={{ display: 'flex', gap: 10, overflowX: 'auto', scrollbarWidth: 'none', padding: '0 18px 4px' }}>
         {HOT_DEALS.map(item => (
-          <div key={item.id} style={{ flexShrink: 0, width: 130, backgroundColor: '#0F0F0F', cursor: 'pointer', position: 'relative' }}>
+          <div key={item.id} onClick={() => handleProductClick(item)} style={{ flexShrink: 0, width: 130, backgroundColor: '#0F0F0F', cursor: 'pointer', position: 'relative' }}>
             <div style={{ width: 130, height: 173, overflow: 'hidden', position: 'relative' }}>
               <Thumb id={item.id} fallback={item.thumbnail} />
               <div style={{
@@ -238,7 +239,7 @@ export default function HomeScreen() {
                 backgroundColor: '#E8E8E8', borderRadius: 2,
                 fontSize: 11, fontWeight: 800, color: '#0A0A0A', letterSpacing: 0.3,
               }}>-{item.discount}%</div>
-              <button onClick={() => toggleLike(item.id)} style={{
+              <button onClick={(e) => { e.stopPropagation(); toggleLike(item.id); }} style={{
                 position: 'absolute', top: 6, right: 6,
                 background: 'none', border: 'none', cursor: 'pointer', padding: 4,
               }}>
@@ -272,7 +273,7 @@ export default function HomeScreen() {
         border: '1px solid #1A1A1A', marginBottom: 40,
       }}>
         {NEW_IN.map(item => (
-          <div key={item.id} style={{ backgroundColor: '#0F0F0F', padding: '0 0 14px', cursor: 'pointer', position: 'relative' }}>
+          <div key={item.id} onClick={() => handleProductClick(item)} style={{ backgroundColor: '#0F0F0F', padding: '0 0 14px', cursor: 'pointer', position: 'relative' }}>
             <div style={{ width: '100%', aspectRatio: '1/1', overflow: 'hidden', position: 'relative' }}>
               <Thumb id={item.id} fallback={item.thumbnail} />
               <div style={{
@@ -280,7 +281,7 @@ export default function HomeScreen() {
                 border: '1px solid rgba(255,255,255,0.25)', borderRadius: 2,
                 fontSize: 9, fontWeight: 700, color: 'rgba(255,255,255,0.6)', letterSpacing: 1,
               }}>NEW</div>
-              <button onClick={() => toggleLike(item.id)} style={{
+              <button onClick={(e) => { e.stopPropagation(); toggleLike(item.id); }} style={{
                 position: 'absolute', top: 6, right: 6,
                 background: 'none', border: 'none', cursor: 'pointer', padding: 4,
               }}>

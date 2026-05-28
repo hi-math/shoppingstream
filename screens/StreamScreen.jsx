@@ -176,16 +176,15 @@ export default function StreamScreen() {
     }, 310);
   }, []);
 
-  /* ── 상세 패널 스와이프 백 ── */
-  const handleDetailTouchStart = useCallback((e) => {
-    const t = e.touches[0];
-    detailGestureRef.current = { startX: t.clientX, startY: t.clientY, tracking: false };
+  /* ── 상세 패널 스와이프 백 (pointer events → 마우스·터치 공통) ── */
+  const handleDetailPointerDown = useCallback((e) => {
+    detailGestureRef.current = { startX: e.clientX, startY: e.clientY, tracking: false };
+    e.currentTarget.setPointerCapture(e.pointerId);
   }, []);
 
-  const handleDetailTouchMove = useCallback((e) => {
-    const t = e.touches[0];
-    const dx = t.clientX - detailGestureRef.current.startX;
-    const dy = t.clientY - detailGestureRef.current.startY;
+  const handleDetailPointerMove = useCallback((e) => {
+    const dx = e.clientX - detailGestureRef.current.startX;
+    const dy = e.clientY - detailGestureRef.current.startY;
 
     if (!detailGestureRef.current.tracking) {
       if (Math.abs(dx) < 5 && Math.abs(dy) < 5) return;
@@ -193,13 +192,13 @@ export default function StreamScreen() {
       detailGestureRef.current.tracking = true;
     }
 
-    if (dx < 0) { // 왼쪽 스와이프만 추적
+    if (dx < 0) {
       setDetailDragX(dx);
       setIsDraggingDetail(true);
     }
   }, []);
 
-  const handleDetailTouchEnd = useCallback(() => {
+  const handleDetailPointerUp = useCallback(() => {
     if (!isDraggingDetail) return;
     if (detailDragX < -80) {
       closeDetail();
@@ -318,9 +317,10 @@ export default function StreamScreen() {
       {/* ── 상세 패널 ── */}
       {detailMounted && shownItem && (
         <div
-          onTouchStart={handleDetailTouchStart}
-          onTouchMove={handleDetailTouchMove}
-          onTouchEnd={handleDetailTouchEnd}
+          onPointerDown={handleDetailPointerDown}
+          onPointerMove={handleDetailPointerMove}
+          onPointerUp={handleDetailPointerUp}
+          onPointerCancel={handleDetailPointerUp}
           style={{
             position: 'absolute',
             inset: 0,
