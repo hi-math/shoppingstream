@@ -70,38 +70,37 @@ export default function App() {
 
   /* ── Pointer 핸들러 (touch-action: pan-y 와 함께 사용) ── */
   const handleDetPointerDown = useCallback((e) => {
-    detailGestureRef.current = { startX: e.clientX, startY: e.clientY, decided: false, isH: false, active: true };
+    detailGestureRef.current = { startX: e.clientX, startY: e.clientY, tracking: false, active: true };
   }, []);
 
   const handleDetPointerMove = useCallback((e) => {
     const g = detailGestureRef.current;
     if (!g.active) return;
-
     const dx = e.clientX - g.startX;
     const dy = e.clientY - g.startY;
 
-    if (!g.decided) {
+    if (!g.tracking) {
       if (Math.abs(dx) < 8 && Math.abs(dy) < 8) return;
-      g.decided = true;
-      g.isH     = Math.abs(dx) > Math.abs(dy);
-      if (g.isH) {
-        try { e.currentTarget.setPointerCapture(e.pointerId); } catch {}
-      }
+      if (Math.abs(dy) > Math.abs(dx)) return;
+      g.tracking = true;
+      try { e.currentTarget.setPointerCapture(e.pointerId); } catch {}
     }
-    if (!g.isH) return;
 
     setDetailDragX(dx);
     setIsDraggingDet(true);
   }, []);
 
   const handleDetPointerUp = useCallback((e) => {
-    detailGestureRef.current.active = false;
-    if (!isDraggingDet) return;
-    const dx = e.clientX - detailGestureRef.current.startX;
+    const g = detailGestureRef.current;
+    if (!g.active) return;
+    g.active = false;
+    setDetailDragX(0);
+    setIsDraggingDet(false);
+    if (!g.tracking) return;
+    const dx = e.clientX - g.startX;
     if (dx > 80)       backDetail();
     else if (dx < -80) closeDetail();
-    else { setDetailDragX(0); setIsDraggingDet(false); }
-  }, [isDraggingDet, backDetail, closeDetail]);
+  }, [backDetail, closeDetail]);
 
   const handleDetPointerCancel = useCallback(() => {
     detailGestureRef.current.active = false;

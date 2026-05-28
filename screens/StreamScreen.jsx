@@ -179,18 +179,19 @@ export default function StreamScreen() {
   /* ── 상세 패널 스와이프 백 (pointer events → 마우스·터치 공통) ── */
   const handleDetailPointerDown = useCallback((e) => {
     detailGestureRef.current = { startX: e.clientX, startY: e.clientY, tracking: false, active: true };
-    e.currentTarget.setPointerCapture(e.pointerId);
   }, []);
 
   const handleDetailPointerMove = useCallback((e) => {
-    if (!detailGestureRef.current.active) return;
-    const dx = e.clientX - detailGestureRef.current.startX;
-    const dy = e.clientY - detailGestureRef.current.startY;
+    const g = detailGestureRef.current;
+    if (!g.active) return;
+    const dx = e.clientX - g.startX;
+    const dy = e.clientY - g.startY;
 
-    if (!detailGestureRef.current.tracking) {
+    if (!g.tracking) {
       if (Math.abs(dx) < 5 && Math.abs(dy) < 5) return;
       if (Math.abs(dy) > Math.abs(dx)) return;
-      detailGestureRef.current.tracking = true;
+      g.tracking = true;
+      try { e.currentTarget.setPointerCapture(e.pointerId); } catch {}
     }
 
     if (dx < 0) {
@@ -199,16 +200,16 @@ export default function StreamScreen() {
     }
   }, []);
 
-  const handleDetailPointerUp = useCallback(() => {
-    detailGestureRef.current.active = false;
-    if (!isDraggingDetail) return;
-    if (detailDragX < -80) {
-      closeDetail();
-    } else {
-      setDetailDragX(0);
-      setIsDraggingDetail(false);
-    }
-  }, [detailDragX, isDraggingDetail, closeDetail]);
+  const handleDetailPointerUp = useCallback((e) => {
+    const g = detailGestureRef.current;
+    if (!g.active) return;
+    g.active = false;
+    setDetailDragX(0);
+    setIsDraggingDetail(false);
+    if (!g.tracking) return;
+    const dx = e.clientX - g.startX;
+    if (dx < -80) closeDetail();
+  }, [closeDetail]);
 
   /* ──────────────────────────────────────────
    * 수직 transform 계산
