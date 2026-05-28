@@ -205,10 +205,9 @@ export default function StreamCard({
         style={{
           position: 'absolute',
           right: 12,
-          top: '50%',
-          transform: 'translateY(-50%)',
+          bottom: 100,
           display: 'flex', flexDirection: 'column',
-          alignItems: 'center', gap: 20,
+          alignItems: 'center', gap: 14,
           zIndex: 10,
         }}
       >
@@ -256,7 +255,7 @@ export default function StreamCard({
 /* ── SVG 아이콘 ── */
 function HeartSvg({ filled }) {
   return (
-    <svg width="26" height="26" viewBox="0 0 24 24"
+    <svg width="20" height="20" viewBox="0 0 24 24"
       fill={filled ? '#fff' : 'none'}
       stroke="#fff" strokeWidth="1.8"
       strokeLinecap="round" strokeLinejoin="round"
@@ -269,7 +268,7 @@ function HeartSvg({ filled }) {
 
 function CommentSvg() {
   return (
-    <svg width="26" height="26" viewBox="0 0 24 24"
+    <svg width="20" height="20" viewBox="0 0 24 24"
       fill="none" stroke="#fff" strokeWidth="1.8"
       strokeLinecap="round" strokeLinejoin="round"
       style={{ display:'block' }}>
@@ -280,7 +279,7 @@ function CommentSvg() {
 
 function ShareSvg() {
   return (
-    <svg width="26" height="26" viewBox="0 0 24 24"
+    <svg width="20" height="20" viewBox="0 0 24 24"
       fill="none" stroke="#fff" strokeWidth="1.8"
       strokeLinecap="round" strokeLinejoin="round"
       style={{ display:'block' }}>
@@ -303,9 +302,9 @@ function ActionBtn({ children, count, label, onClick }) {
       }}
     >
       <div style={{
-        width: 50, height: 50,
-        borderRadius: 25,
-        backgroundColor: 'rgba(255,255,255,0.18)',
+        width: 40, height: 40,
+        borderRadius: 20,
+        backgroundColor: 'rgba(255,255,255,0.15)',
         backdropFilter: 'blur(6px)',
         WebkitBackdropFilter: 'blur(6px)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',

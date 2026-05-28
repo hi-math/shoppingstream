@@ -14,6 +14,7 @@ export default function StreamScreen() {
   const { applyFeedback, _U } = useMomentum('default', '#생일');
 
   const [feed,     setFeed]     = useState([]);
+  const [history,  setHistory]  = useState([]); // 위로 넘긴 카드 스택
   const seenIdsRef = useRef([]);   // ref로 관리 → stale closure 없음
   const [likedIds, setLikedIds] = useState(new Set());
 
@@ -81,22 +82,34 @@ export default function StreamScreen() {
   }, []);
 
   const handleVertCommit = useCallback((direction) => {
-    setIsDraggingV(false);   // transition 활성화
-    setIsExitingV(true);     // % 기반 exit transform으로 전환
+    setIsDraggingV(false);
+    setIsExitingV(true);
     clearTimeout(vertTimerRef.current);
 
     vertTimerRef.current = setTimeout(() => {
-      const topItem = feed[0];
-      if (topItem) applyFeedback(topItem, direction === 'up' ? 'right' : 'left');
-
-      // transition 비활성화 후 상태 리셋 (점프 방지)
       setSkipTrans(true);
       setIsExitingV(false);
       setVertDragY(0);
-      setFeed(prev => prev.slice(1));
-      if (topItem) { seenIdsRef.current = [...seenIdsRef.current, topItem.id]; }
 
-      // 2 프레임 후 transition 재활성화
+      if (direction === 'up') {
+        // 앞으로: 현재 카드를 history에 쌓고 다음으로 이동
+        const topItem = feed[0];
+        if (topItem) {
+          applyFeedback(topItem, 'right');
+          seenIdsRef.current = [...seenIdsRef.current, topItem.id];
+          setHistory(prev => [...prev, topItem]);
+        }
+        setFeed(prev => prev.slice(1));
+      } else {
+        // 뒤로: history에서 꺼내 feed 앞에 붙임
+        setHistory(prev => {
+          if (prev.length === 0) return prev;
+          const prevItem = prev[prev.length - 1];
+          setFeed(f => [prevItem, ...f]);
+          return prev.slice(0, -1);
+        });
+      }
+
       requestAnimationFrame(() =>
         requestAnimationFrame(() => {
           setSkipTrans(false);
@@ -232,7 +245,9 @@ export default function StreamScreen() {
 
   const shownItem   = detailItem ?? feed[0] ?? null;
   const currentCard = feed[0] ?? null;
-  const nextCard    = feed[1] ?? null;
+  const nextCard    = (vertDir === 'down' && history.length > 0)
+    ? history[history.length - 1]
+    : feed[1] ?? null;
 
   return (
     <div

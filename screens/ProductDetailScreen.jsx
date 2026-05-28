@@ -75,26 +75,6 @@ export default function ProductDetailScreen({ item, onClose }) {
           }}
         />
 
-        {/* ← 뒤로가기 */}
-        <button
-          onClick={onClose}
-          style={{
-            position: 'absolute',
-            top: 14, left: 14,
-            width: 36, height: 36,
-            borderRadius: 18,
-            border: '1px solid rgba(255,255,255,0.15)',
-            backgroundColor: 'rgba(0,0,0,0.55)',
-            color: '#E8E8E8',
-            fontSize: 22,
-            cursor: 'pointer',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            backdropFilter: 'blur(8px)',
-          }}
-        >
-          ‹
-        </button>
-
         {/* 카테고리 배지 */}
         <span
           style={{
