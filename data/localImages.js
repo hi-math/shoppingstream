@@ -1,5 +1,5 @@
-// localImages.js — 로컬 이미지 경로 헬퍼
-// images/ 폴더가 Vite publicDir로 서빙됨 → /{id}.jpg or /{id}.png
+// localImages.js — Cloudflare R2 이미지 경로 헬퍼
+const R2_BASE = 'https://pub-29552805c0b8482aab8e85e1cf4e3cec.r2.dev';
 
 const PNG_IDS = new Set([
   '1445171','1694981','2047058','2114723','2169193','2356600','2448417',
@@ -19,5 +19,5 @@ const PNG_IDS = new Set([
  */
 export function localThumb(id) {
   const sid = String(id);
-  return `/${sid}.${PNG_IDS.has(sid) ? 'png' : 'jpg'}`;
+  return `${R2_BASE}/${sid}.${PNG_IDS.has(sid) ? 'png' : 'jpg'}`;
 }
