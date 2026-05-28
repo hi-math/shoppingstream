@@ -1,12 +1,12 @@
 // ProductDetailScreen.jsx
 
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState } from 'react';
 import { localThumb } from '../data/localImages.js';
 
 export default function ProductDetailScreen({
   item,
-  onClose,           // 항상 스트림으로 돌아감
-  onBack  = null,    // 히스토리 이전 상품 (없으면 null)
+  onClose,
+  onBack       = null,
   historyTotal = 0,
   historyIdx   = 0,
 }) {
@@ -17,42 +17,6 @@ export default function ProductDetailScreen({
 
   const hasDiscount = item.discount > 0 && item.originalPrice > item.price;
 
-  /* ── 히어로 영역 스와이프 (스크롤 영역 밖이므로 충돌 없음) ── */
-  const gestureRef  = useRef({ startX: 0, startY: 0, decided: false, isH: false });
-  const [dragX, setDragX]       = useState(0);
-  const [swiping, setSwiping]   = useState(false);
-
-  const handlePointerDown = useCallback((e) => {
-    gestureRef.current = { startX: e.clientX, startY: e.clientY, decided: false, isH: false };
-    e.currentTarget.setPointerCapture(e.pointerId);
-  }, []);
-
-  const handlePointerMove = useCallback((e) => {
-    const g  = gestureRef.current;
-    const dx = e.clientX - g.startX;
-    const dy = e.clientY - g.startY;
-
-    if (!g.decided) {
-      if (Math.abs(dx) < 6 && Math.abs(dy) < 6) return;
-      g.decided = true;
-      g.isH     = Math.abs(dx) > Math.abs(dy);
-    }
-    if (!g.isH) return;
-
-    setDragX(dx);
-    setSwiping(true);
-  }, []);
-
-  const handlePointerUp = useCallback((e) => {
-    if (!swiping) return;
-    const dx = e.clientX - gestureRef.current.startX;
-    setDragX(0);
-    setSwiping(false);
-
-    if (dx > 80)        (onBack ?? onClose)();   // 오른쪽 → 히스토리 or 스트림
-    else if (dx < -80)  onClose();               // 왼쪽 → 스트림
-  }, [swiping, onBack, onClose]);
-
   return (
     <div
       style={{
@@ -61,30 +25,23 @@ export default function ProductDetailScreen({
         backgroundColor: '#0F0F0F', overflow: 'hidden',
       }}
     >
-      {/* ── Hero 이미지 (스와이프 감지 영역) ── */}
+      {/* ── Hero 이미지 ── */}
       <div
-        onPointerDown={handlePointerDown}
-        onPointerMove={handlePointerMove}
-        onPointerUp={handlePointerUp}
-        onPointerCancel={handlePointerUp}
         style={{
           position: 'relative', height: 380, flexShrink: 0,
           backgroundColor: imgError ? '#1A1A1A' : '#0A0A0A',
-          overflow: 'hidden', touchAction: 'none',
-          transform: swiping ? `translateX(${dragX * 0.25}px)` : 'none',
-          transition: swiping ? 'none' : 'transform 0.2s ease',
-          cursor: 'grab',
+          overflow: 'hidden',
         }}
       >
         {!imgError && (
           <img
             src={imgSrc}
             alt={item.name}
+            draggable={false}
             onError={() => {
               if (imgSrc !== item.thumbnail && item.thumbnail) setImgSrc(item.thumbnail);
               else setImgError(true);
             }}
-            draggable={false}
             style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center top' }}
           />
         )}
@@ -106,13 +63,16 @@ export default function ProductDetailScreen({
         {/* 히스토리 인디케이터 */}
         {historyTotal > 1 && (
           <div style={{
-            position: 'absolute', top: 14, left: '50%', transform: 'translateX(-50%)',
+            position: 'absolute', top: 14, left: '50%',
+            transform: 'translateX(-50%)',
             display: 'flex', gap: 5, zIndex: 10, pointerEvents: 'none',
           }}>
             {Array.from({ length: historyTotal }).map((_, i) => (
               <div key={i} style={{
                 width: i === historyIdx ? 18 : 5, height: 5, borderRadius: 3,
-                backgroundColor: i === historyIdx ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.3)',
+                backgroundColor: i === historyIdx
+                  ? 'rgba(255,255,255,0.85)'
+                  : 'rgba(255,255,255,0.3)',
                 transition: 'width 0.2s ease',
               }} />
             ))}
@@ -142,15 +102,6 @@ export default function ProductDetailScreen({
             -{item.discount}% SALE
           </span>
         )}
-
-        {/* 스와이프 힌트 */}
-        <div style={{
-          position: 'absolute', bottom: 14, right: 14,
-          fontSize: 11, color: 'rgba(255,255,255,0.3)',
-          pointerEvents: 'none',
-        }}>
-          {onBack ? '← 이전  ·  오른쪽→스트림' : '← 스와이프 → 스트림'}
-        </div>
       </div>
 
       {/* ── 스크롤 콘텐츠 ── */}
