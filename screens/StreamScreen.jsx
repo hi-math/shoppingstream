@@ -37,6 +37,11 @@ export default function StreamScreen() {
   const [detailItem,      setDetailItem]      = useState(null);
   const unmountTimerRef = useRef(null);
 
+  /* ── 상세 패널 스와이프 백 상태 ── */
+  const [detailDragX,      setDetailDragX]      = useState(0);
+  const [isDraggingDetail, setIsDraggingDetail] = useState(false);
+  const detailGestureRef = useRef({ startX: 0, startY: 0, tracking: false });
+
   /* ── 피드 로드 ── */
   const loadFeed = useCallback((U, seen) => {
     const ranked = rankFeed(U, null, seen, 20); // 한 번에 20개 로드
@@ -149,12 +154,47 @@ export default function StreamScreen() {
 
   /* ── 상세 닫기 ── */
   const closeDetail = useCallback(() => {
+    setDetailDragX(0);
+    setIsDraggingDetail(false);
     setDetailOpen(false);
     unmountTimerRef.current = setTimeout(() => {
       setDetailMounted(false);
       setDetailItem(null);
     }, 310);
   }, []);
+
+  /* ── 상세 패널 스와이프 백 ── */
+  const handleDetailTouchStart = useCallback((e) => {
+    const t = e.touches[0];
+    detailGestureRef.current = { startX: t.clientX, startY: t.clientY, tracking: false };
+  }, []);
+
+  const handleDetailTouchMove = useCallback((e) => {
+    const t = e.touches[0];
+    const dx = t.clientX - detailGestureRef.current.startX;
+    const dy = t.clientY - detailGestureRef.current.startY;
+
+    if (!detailGestureRef.current.tracking) {
+      if (Math.abs(dx) < 5 && Math.abs(dy) < 5) return;
+      if (Math.abs(dy) > Math.abs(dx)) return; // 수직 제스처면 무시
+      detailGestureRef.current.tracking = true;
+    }
+
+    if (dx < 0) { // 왼쪽 스와이프만 추적
+      setDetailDragX(dx);
+      setIsDraggingDetail(true);
+    }
+  }, []);
+
+  const handleDetailTouchEnd = useCallback(() => {
+    if (!isDraggingDetail) return;
+    if (detailDragX < -80) {
+      closeDetail();
+    } else {
+      setDetailDragX(0);
+      setIsDraggingDetail(false);
+    }
+  }, [detailDragX, isDraggingDetail, closeDetail]);
 
   /* ──────────────────────────────────────────
    * 수직 transform 계산
@@ -181,12 +221,12 @@ export default function StreamScreen() {
 
   /* ── 오른쪽 드래그 / 상세 패널 transform (기존 유지) ── */
   const detailTransform = detailOpen
-    ? 'translateX(0)'
+    ? isDraggingDetail ? `translateX(${detailDragX}px)` : 'translateX(0)'
     : isDraggingRight
       ? `translateX(calc(-100% + ${rightDragX}px))`
       : 'translateX(-100%)';
 
-  const detailTransition = isDraggingRight
+  const detailTransition = (isDraggingRight || isDraggingDetail)
     ? 'none'
     : 'transform 0.28s cubic-bezier(0.32,0.72,0,1)';
 
@@ -260,9 +300,12 @@ export default function StreamScreen() {
         )}
       </div>
 
-      {/* ── 상세 패널 (기존 유지) ── */}
+      {/* ── 상세 패널 ── */}
       {detailMounted && shownItem && (
         <div
+          onTouchStart={handleDetailTouchStart}
+          onTouchMove={handleDetailTouchMove}
+          onTouchEnd={handleDetailTouchEnd}
           style={{
             position: 'absolute',
             inset: 0,
