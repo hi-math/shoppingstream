@@ -178,17 +178,18 @@ export default function StreamScreen() {
 
   /* ── 상세 패널 스와이프 백 (pointer events → 마우스·터치 공통) ── */
   const handleDetailPointerDown = useCallback((e) => {
-    detailGestureRef.current = { startX: e.clientX, startY: e.clientY, tracking: false };
+    detailGestureRef.current = { startX: e.clientX, startY: e.clientY, tracking: false, active: true };
     e.currentTarget.setPointerCapture(e.pointerId);
   }, []);
 
   const handleDetailPointerMove = useCallback((e) => {
+    if (!detailGestureRef.current.active) return;
     const dx = e.clientX - detailGestureRef.current.startX;
     const dy = e.clientY - detailGestureRef.current.startY;
 
     if (!detailGestureRef.current.tracking) {
       if (Math.abs(dx) < 5 && Math.abs(dy) < 5) return;
-      if (Math.abs(dy) > Math.abs(dx)) return; // 수직 제스처면 무시
+      if (Math.abs(dy) > Math.abs(dx)) return;
       detailGestureRef.current.tracking = true;
     }
 
@@ -199,6 +200,7 @@ export default function StreamScreen() {
   }, []);
 
   const handleDetailPointerUp = useCallback(() => {
+    detailGestureRef.current.active = false;
     if (!isDraggingDetail) return;
     if (detailDragX < -80) {
       closeDetail();

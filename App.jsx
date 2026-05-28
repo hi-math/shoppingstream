@@ -70,11 +70,13 @@ export default function App() {
 
   /* ── Pointer 핸들러 (touch-action: pan-y 와 함께 사용) ── */
   const handleDetPointerDown = useCallback((e) => {
-    detailGestureRef.current = { startX: e.clientX, startY: e.clientY, decided: false, isH: false };
+    detailGestureRef.current = { startX: e.clientX, startY: e.clientY, decided: false, isH: false, active: true };
   }, []);
 
   const handleDetPointerMove = useCallback((e) => {
-    const g  = detailGestureRef.current;
+    const g = detailGestureRef.current;
+    if (!g.active) return;
+
     const dx = e.clientX - g.startX;
     const dy = e.clientY - g.startY;
 
@@ -83,7 +85,6 @@ export default function App() {
       g.decided = true;
       g.isH     = Math.abs(dx) > Math.abs(dy);
       if (g.isH) {
-        // 수평으로 확정됐을 때만 포인터 캡처
         try { e.currentTarget.setPointerCapture(e.pointerId); } catch {}
       }
     }
@@ -94,6 +95,7 @@ export default function App() {
   }, []);
 
   const handleDetPointerUp = useCallback((e) => {
+    detailGestureRef.current.active = false;
     if (!isDraggingDet) return;
     const dx = e.clientX - detailGestureRef.current.startX;
     if (dx > 80)       backDetail();
@@ -102,6 +104,7 @@ export default function App() {
   }, [isDraggingDet, backDetail, closeDetail]);
 
   const handleDetPointerCancel = useCallback(() => {
+    detailGestureRef.current.active = false;
     setDetailDragX(0);
     setIsDraggingDet(false);
   }, []);
@@ -138,7 +141,13 @@ export default function App() {
       >
         <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 60, overflow: 'hidden' }}>
 
-          {/* 상세 페이지 (홈에서 열린 경우) */}
+          {/* 베이스 화면 — 상세 스와이프 중 뒤에 보임 */}
+          {isDetail
+            ? <HomeScreen onProductClick={openDetail} />
+            : <Screen {...(activeTab === 'home' ? { onProductClick: openDetail } : {})} />
+          }
+
+          {/* 상세 페이지 오버레이 */}
           {isDetail && currentDetailItem && (
             <div
               onPointerDown={handleDetPointerDown}
@@ -150,7 +159,7 @@ export default function App() {
                 transform: detailTransform,
                 transition: detailTransition,
                 willChange: 'transform',
-                touchAction: 'pan-y', // 수직 스크롤은 브라우저가 처리
+                touchAction: 'pan-y',
                 zIndex: 10,
               }}
             >
@@ -162,13 +171,6 @@ export default function App() {
                 historyIdx={detailIdx}
               />
             </div>
-          )}
-
-          {/* 나머지 탭 화면 */}
-          {!isDetail && (
-            <Screen
-              {...(activeTab === 'home' ? { onProductClick: openDetail } : {})}
-            />
           )}
         </div>
 
